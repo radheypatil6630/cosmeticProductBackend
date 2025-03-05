@@ -23,9 +23,9 @@ public class UserContoller {
     public ResponseEntity<User> createUser(@RequestBody User user) {
         try {
 
+            User savedUser = userService.saveRegisterDetails(user);
+            return new ResponseEntity<>(savedUser, HttpStatus.OK);
 
-            User savedUser = userService.saveNewUser(user);
-            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -37,7 +37,7 @@ public class UserContoller {
         List<User> allusers = userService.getALlUser();
 
         if (allusers != null) {
-            return new ResponseEntity<>(allusers, HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(allusers, HttpStatus.OK);
         }
         return  new ResponseEntity<>(allusers,HttpStatus.BAD_REQUEST);
     }
@@ -49,10 +49,10 @@ public class UserContoller {
 
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             }
-        boolean result = userService.findByUsername(username, password);
+        boolean result = userService.checkLogin(username.trim(), password.trim());
         if(!result ){
             return  new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return  new ResponseEntity<>(result,HttpStatus.FOUND);
+        return  new ResponseEntity<>(result,HttpStatus.OK);
     }
 }

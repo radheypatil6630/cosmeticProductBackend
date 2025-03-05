@@ -6,8 +6,10 @@ import com.cloudinary.utils.ObjectUtils;
 import com.product.cosmeticProduct.entity.Product;
 import com.product.cosmeticProduct.entity.User;
 import com.product.cosmeticProduct.repository.ProductRepository;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -24,12 +26,14 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    UserService userService;
+
         @Autowired
     private Cloudinary cloudinary;
 
 
     public Product saveProducts(Product product){
-//        product.setDate(LocalDateTime.now());
         return productRepository.save(product);
     }
 
@@ -38,8 +42,7 @@ public class ProductService {
     }
 
     public List<Product> getProducts(User user){
-
-        return productRepository.findAll();
+        return user.getProductEntries();
     }
 
     public String uploadImage(MultipartFile imageFile) throws IOException {
@@ -48,5 +51,23 @@ public class ProductService {
         String imageUrl = uploadResult.get("url").toString();
         System.out.println("Image uploaded successfully. URL: " + imageUrl);
         return imageUrl;
+    }
+
+    @Transactional
+    public boolean deleteById(ObjectId id, String username) {
+        boolean removed = false;
+        try {
+            User user = userService.findByUsername(username);
+            removed = user.getProductEntries().removeIf(x -> x.getId().equals(id));
+            if (removed) {
+                userService.saveRegisterDetails(user); // Save user without modifying password
+                productRepository.deleteById(id);
+
+                userService.updateUserJournalEntries(username, user.getProductEntries());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error while deleting journal entry: ", e);
+        }
+        return removed;
     }
 }

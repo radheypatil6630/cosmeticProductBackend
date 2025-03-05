@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,6 +18,7 @@ public class Product {
     @Id
     ObjectId id;
 
+
     @NonNull
     private String productName;
 
@@ -26,7 +28,7 @@ public class Product {
     @NonNull
     private String productDescription;
 
-//    @NonNull
+
     @NonNull
     private String imgUrl;
 

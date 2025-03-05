@@ -27,25 +27,25 @@ public class ProductController {
     @Autowired
     private UserService userService;
 
-
-    @PostMapping(value = "/{userId}/create-product", consumes = "multipart/form-data")
+///{userId}  @PathVariable ObjectId userId,
+    @PostMapping(value = "/create-product", consumes = "multipart/form-data")
     public ResponseEntity<?> createProduct(
-            @PathVariable ObjectId userId,
+
             @RequestPart("product") String productJson,
             @RequestPart("image") MultipartFile imageFile
     ) {
         try {
 
-            System.out.println("Received request to create product for user: " + userId);
+//            System.out.println("Received request to create product for user: " + userId);
             System.out.println("Product JSON: " + productJson);
             System.out.println("Image file: " + imageFile.getOriginalFilename());
 
 
-            Optional<User> userOptional = userService.findUserById(userId);
-            if (userOptional.isEmpty()) {
-
-                return new ResponseEntity<>("User not found", HttpStatus.BAD_REQUEST);
-            }
+//            Optional<User> userOptional = userService.findUserById(userId);
+//            if (userOptional.isEmpty()) {
+//
+//                return new ResponseEntity<>("User not found", HttpStatus.BAD_REQUEST);
+//            }
 
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -56,11 +56,11 @@ public class ProductController {
 
             product.setImgUrl(imageUrl);
 
-            User user = userOptional.get();
-            user.getProductEntries().add(product);
+//            User user = userOptional.get();
+//            user.getProductEntries().add(product);
 
             productService.saveProducts(product);
-            userService.saveNewUser(user);
+//            userService.saveRegisterDetails(user);
 
 
             System.out.println("Product saved successfully: " + product);
@@ -72,7 +72,16 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/findAllProducts")
+    public ResponseEntity<List<?>> getUsers() {
 
+        List<Product> allusers = productService.findAllProducts();
+
+        if (allusers != null) {
+            return new ResponseEntity<>(allusers, HttpStatus.OK);
+        }
+        return  new ResponseEntity<>(allusers,HttpStatus.BAD_REQUEST);
+    }
 
     @GetMapping("/{userId}/getProducts")  //
     public ResponseEntity<?> getProducts(@PathVariable ObjectId userId){
@@ -85,12 +94,23 @@ public class ProductController {
 
 
             User user = id.get();
-            List<Product> productEntries = user.getProductEntries();
-//        List<Product> productEntries = productService.findAllProducts();
+            List<Product> productEntries = productService.getProducts(user);
 
             if (productEntries != null){
                 return new ResponseEntity<>(productEntries, HttpStatus.OK);
             }
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
     }
+
+    @DeleteMapping("/{username}/{productId}/deleteProduct")
+    public ResponseEntity<?> deleteProducts(@PathVariable String username, @PathVariable ObjectId productId) {
+        boolean removed = productService.deleteById(productId, username);
+
+        if (removed) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
 }
