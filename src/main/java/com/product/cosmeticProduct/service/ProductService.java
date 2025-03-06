@@ -49,6 +49,9 @@ public class ProductService {
         System.out.println("Uploading image to Cloudinary: " + imageFile.getOriginalFilename());
         Map<?, ?> uploadResult = cloudinary.uploader().upload(imageFile.getBytes(), ObjectUtils.emptyMap());
         String imageUrl = uploadResult.get("url").toString();
+        if (imageUrl.startsWith("http://")) {
+            imageUrl = imageUrl.replace("http://", "https://");
+        }
         System.out.println("Image uploaded successfully. URL: " + imageUrl);
         return imageUrl;
     }
